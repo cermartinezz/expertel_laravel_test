@@ -1,6 +1,5 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MeetingController;
 /*
@@ -16,5 +15,5 @@ use App\Http\Controllers\MeetingController;
 
 
 
-Route::get ('/meetings', [MeetingController::class,'list']);
-Route::post('/meetings', [MeetingController::class,'create']);
+Route::get ('/meetings', [MeetingController::class,'list'])->name('meetings.list');
+Route::post('/meetings', [MeetingController::class,'create'])->name('meetings.create');
