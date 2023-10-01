@@ -11,10 +11,11 @@ use Symfony\Component\HttpFoundation\Response;
 
 class MeetingController extends Controller
 {
-    //
-    public function list(Request $request)
+    public function list(): JsonResponse
     {
-        return response()->json(Meeting::all());
+        return response()->json([
+            'meetings' => Meeting::query()->get()
+        ]);
     }
 
 

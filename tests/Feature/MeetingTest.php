@@ -11,11 +11,29 @@ use Tests\TestCase;
 class MeetingTest extends TestCase
 {
     use RefreshDatabase, WithFaker;
-    /**
-     * A basic feature test example.
-     *
-     * @return void
-     */
+
+    public function test_list_meetings()
+    {
+      $users = User::factory()->count(2)->create();
+
+      $startTime = now()->addHour();
+
+      $endTime = now()->addHour(2);
+
+      $meetingName = 'Test Meeting';
+
+      $this->postJson(route('meetings.create'), [
+        'users' => $users->pluck('id')->toArray(),
+        'start_time' => $startTime->toDateTimeString(),
+        'end_time' => $endTime->toDateTimeString(),
+        'meeting_name' => $meetingName,
+      ]);
+
+      $response = $this->getJson(route('meetings.list'));
+
+      $response->assertJsonCount(count($users), 'meetings');
+
+    }
     public function test_meeting_can_be_created()
     {
         $users = User::factory()->count(2)->create();
