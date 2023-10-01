@@ -2,6 +2,7 @@
 namespace App\Services;
 
 use App\Models\Meeting;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 
@@ -45,19 +46,12 @@ class MeetingService
   protected function validateMeeting(mixed $users, mixed $startTime, mixed $endTime): bool
   {
 
-      $startTime = \Carbon\Carbon::parse($startTime);
-      $endTime = \Carbon\Carbon::parse($endTime);
+      $startTime = Carbon::parse($startTime);
+      $endTime = Carbon::parse($endTime);
 
       $overlappingMeetings = Meeting::query()
         ->whereIn('user_id', $users)
-        ->where(function ($query) use ($startTime, $endTime) {
-          $query->whereBetween('start_time', [$startTime, $endTime])
-            ->orWhereBetween('end_time', [$startTime, $endTime])
-            ->orWhere(function ($query) use ($startTime, $endTime) {
-              $query->where('start_time', '<', $startTime)
-                ->where('end_time', '>', $endTime);
-            });
-        })
+        ->overlappingMeetings($startTime, $endTime)
         ->get();
 
       return ! $overlappingMeetings->count() > 0;
