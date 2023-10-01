@@ -9,15 +9,23 @@ class MeetingService
 {
     public function scheduleMeeting($data): bool
     {
-
-        $meetings = $this->createMeeting(
+        if(
+          $this->validateMeeting(
             $data['users'],
             $data['start_time'],
-            $data['end_time'],
-            $data['meeting_name']);
+            $data['end_time']
+          )
+        ){
+          $meetings = $this->createMeeting(
+              $data['users'],
+              $data['start_time'],
+              $data['end_time'],
+              $data['meeting_name']);
 
-        return count($data['users']) == count($meetings);
+          return count($data['users']) == count($meetings);
+        }
 
+        return false;
     }
 
     protected function createMeeting($users, $startTime, $endTime, $name)
@@ -34,4 +42,24 @@ class MeetingService
         });
     }
 
+  protected function validateMeeting(mixed $users, mixed $startTime, mixed $endTime): bool
+  {
+
+      $startTime = \Carbon\Carbon::parse($startTime);
+      $endTime = \Carbon\Carbon::parse($endTime);
+
+      $overlappingMeetings = Meeting::query()
+        ->whereIn('user_id', $users)
+        ->where(function ($query) use ($startTime, $endTime) {
+          $query->whereBetween('start_time', [$startTime, $endTime])
+            ->orWhereBetween('end_time', [$startTime, $endTime])
+            ->orWhere(function ($query) use ($startTime, $endTime) {
+              $query->where('start_time', '<', $startTime)
+                ->where('end_time', '>', $endTime);
+            });
+        })
+        ->get();
+
+      return ! $overlappingMeetings->count() > 0;
+  }
 }
